@@ -5,20 +5,20 @@ import java.io.*;
 
 public class ServerGreeter extends Thread {
 	//1. Create an object of the ServerSocket class
-
+	ServerSocket s;
 	public ServerGreeter() throws IOException {
 		//2. Initialize the ServerSocket object. In the parameters,
 		//   you must define the port at which the server will listen for connections.
-		
+		s = new ServerSocket(2333);
 		//*OPTIONAL* you can set a time limit for the server to wait by using the 
 		//  ServerSocket's setSoTimeout(int timeInMilliSeconds) method
 	}
 
 	public void run() {
 		//3. Create a boolean variable and initialize it to true.
-		
+		boolean b = true;
 		//4. Make a while loop that continues looping as long as the boolean created in the previous step is true.
-			
+		while(b) {	
 			//5. Make a try-catch block that checks for two types Exceptions: SocketTimeoutException and IOException.
 			//   Put steps 8 - 15 in the try block.
 		
@@ -44,7 +44,7 @@ public class ServerGreeter extends Thread {
 
 			//7. If the program catches a IOException, let the user know about it and set the loop's boolean variable to false.
 
-		
+		}
 	}
 
 	public static void main(String[] args) {
