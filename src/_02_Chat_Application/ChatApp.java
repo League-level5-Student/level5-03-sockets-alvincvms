@@ -1,11 +1,15 @@
 package _02_Chat_Application;
 
 import java.awt.Dimension;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -43,7 +47,9 @@ public class ChatApp extends JFrame {
 		this.add(panel);
 		this.setSize(400, 400);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setResizable(false);
 		name = JOptionPane.showInputDialog("Please enter your name:");
+		this.setTitle(name + "'s Chat App");
 		String[] options = {"Host", "Join"};
 		int choice = JOptionPane.showOptionDialog(null, "Please select your way to start the chat:", "Host/Client", 0, -1, null, options, 0);
 		if(choice == 0) {
@@ -53,8 +59,40 @@ public class ChatApp extends JFrame {
 			ObjectInputStream is;
 			ServerSocket server;
 			try {
+				this.setVisible(true);
+				chats.setText("Chat started on:\nIP: " + InetAddress.getLocalHost().getHostAddress() + "\nPort: " + port + "\n" + "Waiting for a client to connect...");
 				server = new ServerSocket(port);
 				socket = server.accept();
+				chats.setText(chats.getText() + "\nClient connected!\n");
+				
+				os = new ObjectOutputStream(socket.getOutputStream());
+				is = new ObjectInputStream(socket.getInputStream());
+				os.flush();
+				send.addActionListener(e -> {
+					sendMessage(os);
+				});
+				while(socket.isConnected()) {
+					try {
+						String txt = (String) is.readObject();
+						chats.setText(chats.getText() + "\n" + txt);
+					} catch(EOFException e) {
+						JOptionPane.showMessageDialog(null, "Connection lost.");
+						System.exit(0);
+					}
+				}
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Connection lost.");
+				System.exit(0);
+			}
+		} else {
+			String ip = JOptionPane.showInputDialog("Please enter the ip address:");
+			int port = Integer.parseInt(JOptionPane.showInputDialog("Please enter the port:"));
+			ObjectOutputStream os;
+			ObjectInputStream is;
+			Socket socket;
+			try {
+				socket = new Socket(ip, port);
+				chats.setText("Connected to:\nIP: " + ip + "\nPort: " + port + "\n");
 				
 				os = new ObjectOutputStream(socket.getOutputStream());
 				is = new ObjectInputStream(socket.getInputStream());
@@ -64,14 +102,18 @@ public class ChatApp extends JFrame {
 				});
 				this.setVisible(true);
 				while(socket.isConnected()) {
-					unfinished
+					try {
+						String txt = (String) is.readObject();
+						chats.setText(chats.getText() + "\n" + txt);
+					} catch(EOFException e) {
+						JOptionPane.showMessageDialog(null, "Connection lost.");
+						System.exit(0);
+					}
 				}
-			} catch (IOException e) {
-				JOptionPane.showMessageDialog(null, "An error occured.");
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(null, "Failed to connect to the host.");
 				System.exit(0);
 			}
-		} else {
-			
 		}
 	}
 	
@@ -80,7 +122,7 @@ public class ChatApp extends JFrame {
 		text.setText("");
 		try {
 			if(address != null) {
-				address.writeObject(txt);
+				address.writeObject(name + ": " + txt);
 				chats.setText(chats.getText() + "\n" + name + ": " + txt);
 				address.flush();
 			}
