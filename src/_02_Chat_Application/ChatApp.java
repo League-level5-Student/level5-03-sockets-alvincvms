@@ -1,6 +1,5 @@
 package _02_Chat_Application;
 
-import java.awt.Dimension;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
